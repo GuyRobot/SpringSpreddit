@@ -8,7 +8,7 @@ import java.time.Instant
 data class VerificationToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long = 0,
     val token: String,
     @OneToOne(fetch = FetchType.LAZY)
     val user: User,

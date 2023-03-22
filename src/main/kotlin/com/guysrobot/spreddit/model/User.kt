@@ -13,7 +13,7 @@ import java.time.Instant
 data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long = 0,
     @NotBlank(message = "Username is required")
     val username: String,
     @NotBlank(message = "Password is required")
