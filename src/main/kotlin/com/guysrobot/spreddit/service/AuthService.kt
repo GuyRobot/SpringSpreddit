@@ -1,6 +1,7 @@
 package com.guysrobot.spreddit.service
 
 import com.guysrobot.spreddit.dto.RegisterRequest
+import com.guysrobot.spreddit.exception.SpredditException
 import com.guysrobot.spreddit.model.NotificationEmail
 import com.guysrobot.spreddit.model.User
 import com.guysrobot.spreddit.model.VerificationToken
@@ -48,5 +49,17 @@ class AuthService(
         verificationTokenRepository.save(verificationToken)
 
         return token
+    }
+
+    fun verifyAccount(token: String) {
+        val verificationToken = verificationTokenRepository.findByToken(token)
+        verificationToken.orElseThrow { SpredditException("Invalid token") }
+        fetchUserAndEnable(verificationToken.get())
+    }
+
+    @Transactional
+    fun fetchUserAndEnable(verificationToken: VerificationToken) {
+        val user = userRepository.findByUsername(verificationToken.user.username).orElseThrow { SpredditException("User not found with ${verificationToken.user.username}") }
+        userRepository.save(user.copy(enabled = true))
     }
 }
