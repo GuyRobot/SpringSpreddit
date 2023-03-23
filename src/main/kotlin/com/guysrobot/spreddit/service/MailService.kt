@@ -5,6 +5,7 @@ import com.guysrobot.spreddit.model.NotificationEmail
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.mail.javamail.MimeMessagePreparator
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 
 @Service
@@ -12,6 +13,7 @@ class MailService(
     private val mailSender: JavaMailSender,
     private val mailContentBuilder: MailContentBuilder
 ) {
+    @Async
     fun sendMail(notificationEmail: NotificationEmail) {
         val messagePreparator: MimeMessagePreparator = MimeMessagePreparator { mimeMessage ->
             val messageHelper = MimeMessageHelper(mimeMessage)
