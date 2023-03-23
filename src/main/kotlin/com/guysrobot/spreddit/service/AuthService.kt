@@ -1,6 +1,7 @@
 package com.guysrobot.spreddit.service
 
 import com.guysrobot.spreddit.dto.RegisterRequest
+import com.guysrobot.spreddit.model.NotificationEmail
 import com.guysrobot.spreddit.model.User
 import com.guysrobot.spreddit.model.VerificationToken
 import com.guysrobot.spreddit.repository.UserRepository
@@ -19,7 +20,8 @@ import java.util.UUID
 class AuthService(
     private val passwordEncoder: PasswordEncoder,
     private val userRepository: UserRepository,
-    private val verificationTokenRepository: VerificationTokenRepository
+    private val verificationTokenRepository: VerificationTokenRepository,
+    private val mailService: MailService
 ) {
 
     @Transactional
@@ -35,6 +37,8 @@ class AuthService(
         userRepository.save(user)
 
         val token = verify(user)
+
+        mailService.sendMail(NotificationEmail("Please activate your account", user.email, "Thank you for signing up for Spreddit, please click on the link below to activate your account: http://localhost:8080/api/auth/accountVertification/$token"))
     }
 
     fun verify(user: User): String {
