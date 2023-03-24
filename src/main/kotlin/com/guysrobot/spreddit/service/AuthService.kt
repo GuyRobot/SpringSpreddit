@@ -1,13 +1,19 @@
 package com.guysrobot.spreddit.service
 
+import com.guysrobot.spreddit.dto.AuthenticateResponse
 import com.guysrobot.spreddit.dto.RegisterRequest
+import com.guysrobot.spreddit.dto.SigninRequest
 import com.guysrobot.spreddit.exception.SpredditException
 import com.guysrobot.spreddit.model.NotificationEmail
 import com.guysrobot.spreddit.model.User
 import com.guysrobot.spreddit.model.VerificationToken
 import com.guysrobot.spreddit.repository.UserRepository
 import com.guysrobot.spreddit.repository.VerificationTokenRepository
+import com.guysrobot.spreddit.security.JwtProvider
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
@@ -22,7 +28,9 @@ class AuthService(
     private val passwordEncoder: PasswordEncoder,
     private val userRepository: UserRepository,
     private val verificationTokenRepository: VerificationTokenRepository,
-    private val mailService: MailService
+    private val mailService: MailService,
+    private val authenticationManager: AuthenticationManager,
+    private val jwtProvider: JwtProvider
 ) {
 
     @Transactional
@@ -39,7 +47,13 @@ class AuthService(
 
         val token = verify(user)
 
-        mailService.sendMail(NotificationEmail("Please activate your account", user.email, "Thank you for signing up for Spreddit, please click on the link below to activate your account: http://localhost:8080/api/auth/accountVertification/$token"))
+        mailService.sendMail(
+            NotificationEmail(
+                "Please activate your account",
+                user.email,
+                "Thank you for signing up for Spreddit, please click on the link below to activate your account: http://localhost:8080/api/auth/accountVertification/$token"
+            )
+        )
     }
 
     fun verify(user: User): String {
@@ -59,7 +73,21 @@ class AuthService(
 
     @Transactional
     fun fetchUserAndEnable(verificationToken: VerificationToken) {
-        val user = userRepository.findByUsername(verificationToken.user.username).orElseThrow { SpredditException("User not found with ${verificationToken.user.username}") }
+        val user = userRepository.findByUsername(verificationToken.user.username)
+            .orElseThrow { SpredditException("User not found with ${verificationToken.user.username}") }
         userRepository.save(user.copy(enabled = true))
+    }
+
+    fun signin(signinRequest: SigninRequest): AuthenticateResponse {
+        val authentication = authenticationManager.authenticate(
+            UsernamePasswordAuthenticationToken(
+                signinRequest.username,
+                signinRequest.password
+            )
+        )
+
+        SecurityContextHolder.getContext().authentication = authentication
+        val token = jwtProvider.generateToken(authentication)
+        return AuthenticateResponse(token, signinRequest.username)
     }
 }

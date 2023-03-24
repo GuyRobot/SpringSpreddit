@@ -1,6 +1,8 @@
 package com.guysrobot.spreddit.controller
 
+import com.guysrobot.spreddit.dto.AuthenticateResponse
 import com.guysrobot.spreddit.dto.RegisterRequest
+import com.guysrobot.spreddit.dto.SigninRequest
 import com.guysrobot.spreddit.service.AuthService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -26,5 +28,11 @@ class AuthController(private val authService: AuthService) {
     fun verifyAccount(@PathVariable token: String): ResponseEntity<String> {
         authService.verifyAccount(token)
         return ResponseEntity("Account activated successfully", HttpStatus.OK)
+    }
+
+    @PostMapping("/signin")
+    @ResponseStatus(HttpStatus.OK)
+    fun signin(@RequestBody signinRequest: SigninRequest): AuthenticateResponse {
+        return authService.signin(signinRequest)
     }
 }
