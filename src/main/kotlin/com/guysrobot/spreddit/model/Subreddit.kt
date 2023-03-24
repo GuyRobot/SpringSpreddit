@@ -14,14 +14,14 @@ import java.time.Instant
 data class Subreddit(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long = 0,
     @NotBlank(message = "Community name is required")
     val name: String,
     @NotBlank(message = "Description is required")
     val description: String,
     @OneToMany(fetch = FetchType.LAZY)
-    val posts: List<Post>,
-    val createdDate: Instant,
+    val posts: List<Post> = listOf(),
+    val createdDate: Instant = Instant.now(),
     @ManyToOne(fetch = FetchType.LAZY)
-    val user: User
+    val user: User? = null
 )
