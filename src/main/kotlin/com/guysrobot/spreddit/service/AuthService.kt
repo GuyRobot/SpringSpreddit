@@ -10,17 +10,19 @@ import com.guysrobot.spreddit.model.VerificationToken
 import com.guysrobot.spreddit.repository.UserRepository
 import com.guysrobot.spreddit.repository.VerificationTokenRepository
 import com.guysrobot.spreddit.security.JwtProvider
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
+
 
 @Service
 @Component
@@ -89,5 +91,16 @@ class AuthService(
         SecurityContextHolder.getContext().authentication = authentication
         val token = jwtProvider.generateToken(authentication)
         return AuthenticateResponse(token, signinRequest.username)
+    }
+
+    @Transactional(readOnly = true)
+    fun getCurrentUser(): User {
+        val principal: Jwt = SecurityContextHolder.getContext().authentication.principal as Jwt
+        return userRepository.findByUsername(principal.subject)
+            .orElseThrow {
+                UsernameNotFoundException(
+                    "User name not found - " + principal.subject
+                )
+            }
     }
 }
