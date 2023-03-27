@@ -1,8 +1,13 @@
 package com.guysrobot.spreddit.model
 
+import com.github.marlonlom.utilities.timeago.TimeAgo
 import com.guysrobot.spreddit.dto.PostResponse
+import com.guysrobot.spreddit.repository.CommentRepository
+import com.guysrobot.spreddit.repository.VoteRepository
+import com.guysrobot.spreddit.service.AuthService
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.annotation.Id
 import java.time.Instant
 
@@ -26,6 +31,8 @@ data class Post(
     val subreddit: Subreddit? = null,
     val createdDate: Instant = Instant.now()
 ) {
+    @Autowired
+    private lateinit var commentRepository: CommentRepository
     fun toDto(): PostResponse {
         return PostResponse(
             postId = postId,
@@ -33,7 +40,9 @@ data class Post(
             description = description,
             url = url,
             subredditName = subreddit?.name,
-            username = user?.username
+            username = user?.username,
+            commentCount = commentRepository.findByPost(post = this).size,
+            duration = TimeAgo.using(createdDate.toEpochMilli())
         )
     }
 }
