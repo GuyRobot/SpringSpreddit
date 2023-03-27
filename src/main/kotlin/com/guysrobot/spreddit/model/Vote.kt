@@ -6,7 +6,7 @@ import jakarta.persistence.*
 data class Vote(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val voteId: Long,
+    val voteId: Long = 0,
     val voteType: VoteType,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
