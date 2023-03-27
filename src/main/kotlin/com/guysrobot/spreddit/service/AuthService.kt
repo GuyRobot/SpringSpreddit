@@ -1,6 +1,7 @@
 package com.guysrobot.spreddit.service
 
 import com.guysrobot.spreddit.dto.AuthenticateResponse
+import com.guysrobot.spreddit.dto.RefreshTokenRequest
 import com.guysrobot.spreddit.dto.RegisterRequest
 import com.guysrobot.spreddit.dto.SigninRequest
 import com.guysrobot.spreddit.exception.SpredditException
@@ -32,7 +33,8 @@ class AuthService(
     private val verificationTokenRepository: VerificationTokenRepository,
     private val mailService: MailService,
     private val authenticationManager: AuthenticationManager,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val refreshTokenService: RefreshTokenService
 ) {
 
     @Transactional
@@ -90,7 +92,12 @@ class AuthService(
 
         SecurityContextHolder.getContext().authentication = authentication
         val token = jwtProvider.generateToken(authentication)
-        return AuthenticateResponse(token, signinRequest.username)
+        return AuthenticateResponse(
+            token,
+            signinRequest.username,
+            refreshTokenService.generateRefreshToken().token,
+            Instant.now().plusMillis(jwtProvider.jwtExpirationMills)
+        )
     }
 
     @Transactional(readOnly = true)
@@ -102,5 +109,16 @@ class AuthService(
                     "User name not found - " + principal.subject
                 )
             }
+    }
+
+    fun refreshToken(refreshTokenRequest: RefreshTokenRequest): AuthenticateResponse {
+        refreshTokenService.validateRefreshToken(refreshTokenRequest.refreshToken)
+        val token = jwtProvider.generateTokenWithUsername(refreshTokenRequest.username)
+        return AuthenticateResponse(
+            token = token,
+            username = refreshTokenRequest.username,
+            refreshToken = refreshTokenRequest.refreshToken,
+            expireAt = Instant.now().plusMillis(jwtProvider.jwtExpirationMills)
+        )
     }
 }

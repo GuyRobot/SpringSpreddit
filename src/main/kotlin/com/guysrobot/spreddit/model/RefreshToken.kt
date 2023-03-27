@@ -10,7 +10,7 @@ import java.time.Instant
 data class RefreshToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long = 0,
     val token: String,
-    val createdDate: Instant
+    val createdDate: Instant = Instant.now()
 )

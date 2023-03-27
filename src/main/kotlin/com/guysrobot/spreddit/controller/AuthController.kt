@@ -1,9 +1,12 @@
 package com.guysrobot.spreddit.controller
 
 import com.guysrobot.spreddit.dto.AuthenticateResponse
+import com.guysrobot.spreddit.dto.RefreshTokenRequest
 import com.guysrobot.spreddit.dto.RegisterRequest
 import com.guysrobot.spreddit.dto.SigninRequest
 import com.guysrobot.spreddit.service.AuthService
+import com.guysrobot.spreddit.service.RefreshTokenService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController(private val authService: AuthService) {
+class AuthController(private val authService: AuthService, private val refreshTokenService: RefreshTokenService) {
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     fun signup(@RequestBody registerRequest: RegisterRequest): ResponseEntity<String> {
@@ -34,5 +37,17 @@ class AuthController(private val authService: AuthService) {
     @ResponseStatus(HttpStatus.OK)
     fun signin(@RequestBody signinRequest: SigninRequest): AuthenticateResponse {
         return authService.signin(signinRequest)
+    }
+
+    @PostMapping("/refresh/token")
+    fun refreshToken(@RequestBody refreshTokenRequest: RefreshTokenRequest): AuthenticateResponse {
+        return authService.refreshToken(refreshTokenRequest)
+    }
+
+    @PostMapping("/signout")
+    @ResponseStatus(HttpStatus.OK)
+    fun signout(@Valid @RequestBody refreshTokenRequest: RefreshTokenRequest): String {
+        refreshTokenService.deleteRefreshToken(refreshTokenRequest.refreshToken)
+        return "Refresh token deleted successfully"
     }
 }
