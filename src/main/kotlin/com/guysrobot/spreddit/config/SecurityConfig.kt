@@ -4,16 +4,18 @@ import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
 import com.nimbusds.jose.proc.SecurityContext
+import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.security.config.BeanIds
+import org.springframework.context.annotation.Lazy
+import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -24,21 +26,28 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler
-import org.springframework.security.oauth2.server.resource.web.access.server.BearerTokenServerAccessDeniedHandler
 import org.springframework.security.web.SecurityFilterChain
 import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
-import kotlin.jvm.Throws
+
 
 @Configuration
+@EnableWebSecurity
 class SecurityConfig(
     private val userDetailsService: UserDetailsService,
     @Value("\${jwt.public.key}")
     private val publishKey: RSAPublicKey,
     @Value("\${jwt.private.key}")
-    private val privateKey: RSAPrivateKey
-) : WebSecurityConfiguration() {
+    private val privateKey: RSAPrivateKey,
+) {
+    @Bean
+    @Throws(java.lang.Exception::class)
+    fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager {
+        return authConfig.authenticationManager
+    }
+
     @Throws(Exception::class)
+    @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http.authorizeHttpRequests { auth ->
             auth.anyRequest()
@@ -61,7 +70,7 @@ class SecurityConfig(
         return http.build()
     }
 
-    @Autowired
+    @Override
     fun configGlobal(authenticationManagerBuilder: AuthenticationManagerBuilder) {
         authenticationManagerBuilder.userDetailsService(userDetailsService)
             .passwordEncoder(passwordEncoder())

@@ -30,8 +30,8 @@ class CommentService(
         commentRepository.save(comment)
 
         val message = mailContentBuilder.build("${post.user?.username} posted a comment on your post. ${post.url}")
-        post.user?.let {
-            sendCommentNotification(message, post.user)
+        post.user?.let { user ->
+            sendCommentNotification(message, user)
         }
     }
 
@@ -48,6 +48,6 @@ class CommentService(
     @Transactional(readOnly = true)
     fun getAllCommentsForUser(username: String): List<CommentDto> {
         val user = userRepository.findByUsername(username).orElseThrow { SpredditException("User not found with username: $username") }
-        return commentRepository.findByUser(user).map { it.toDto() }
+        return commentRepository.findAllByUser(user).map { it.toDto() }
     }
 }
