@@ -10,17 +10,21 @@ import jakarta.validation.constraints.NotEmpty
 import java.time.Instant
 
 @Entity
-data class User(
+class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var userId: Long = 0,
     @NotBlank(message = "Username is required")
-    val username: String,
+    var username: String,
     @NotBlank(message = "Password is required")
-    val password: String,
+    var password: String,
     @Email
     @NotEmpty(message = "Email is required")
-    val email: String,
-    val created: Instant,
-    val enabled: Boolean
-)
+    var email: String,
+    var created: Instant,
+    var enabled: Boolean
+) {
+    fun copy(enabled: Boolean): User {
+        return User(userId, username, password, email, created, enabled)
+    }
+}

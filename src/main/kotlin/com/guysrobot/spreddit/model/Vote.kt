@@ -3,15 +3,15 @@ package com.guysrobot.spreddit.model
 import jakarta.persistence.*
 
 @Entity
-data class Vote(
+class Vote(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val voteId: Long = 0,
-    val voteType: VoteType,
+    var voteId: Long = 0,
+    var voteType: VoteType,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "postId", referencedColumnName = "postId")
-    val post: Post,
+    var post: Post,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", referencedColumnName = "userId")
-    val user: User
+    var user: User
 )

@@ -7,10 +7,10 @@ import jakarta.persistence.Id
 import java.time.Instant
 
 @Entity
-data class RefreshToken(
+class RefreshToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-    val token: String,
-    val createdDate: Instant = Instant.now()
+    var id: Long = 0,
+    var token: String,
+    var createdDate: Instant = Instant.now()
 )

@@ -5,12 +5,12 @@ import java.time.Instant
 
 @Entity
 @Table(name = "Token")
-data class VerificationToken(
+class VerificationToken(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-    val token: String,
+    var id: Long = 0,
+    var token: String,
     @OneToOne(fetch = FetchType.LAZY)
-    val user: User,
-    val expireDate: Instant
+    var user: User,
+    var expireDate: Instant
 )

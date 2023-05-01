@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CommentRepository : JpaRepository<Comment, Long> {
-    fun findByPost(post: Post) : List<Comment>
-    fun findByUser(post: User?): List<Comment>
+    fun findByPost(post: Post?): Iterable<Comment>
+    fun findAllByUser(user: User?): Iterable<Comment>
 }

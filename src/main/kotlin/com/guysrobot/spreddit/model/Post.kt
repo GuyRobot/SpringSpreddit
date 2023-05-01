@@ -3,37 +3,32 @@ package com.guysrobot.spreddit.model
 import com.github.marlonlom.utilities.timeago.TimeAgo
 import com.guysrobot.spreddit.dto.PostResponse
 import com.guysrobot.spreddit.repository.CommentRepository
-import com.guysrobot.spreddit.repository.VoteRepository
-import com.guysrobot.spreddit.service.AuthService
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.annotation.Id
 import java.time.Instant
 
 
 @Entity
-data class Post(
+class Post(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val postId: Long = 0,
+    var postId: Long = 0,
     @NotBlank(message = "Post name cannot be blank")
-    val postName: String,
-    val url: String?,
+    var postName: String,
+    var url: String?,
     @Lob
-    val description: String,
-    val voteCount: Int = 0,
+    var description: String,
+    var voteCount: Int = 0,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", referencedColumnName = "userId")
-    val user: User? = null,
+    var user: User? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id", referencedColumnName = "id")
-    val subreddit: Subreddit? = null,
-    val createdDate: Instant = Instant.now()
+    var subreddit: Subreddit? = null,
+    var createdDate: Instant = Instant.now(),
 ) {
-    @Autowired
-    private lateinit var commentRepository: CommentRepository
-    fun toDto(): PostResponse {
+    fun toDto(commentRepository: CommentRepository): PostResponse {
         return PostResponse(
             postId = postId,
             postName = postName,
@@ -41,8 +36,12 @@ data class Post(
             url = url,
             subredditName = subreddit?.name,
             username = user?.username,
-            commentCount = commentRepository.findByPost(post = this).size,
+            commentCount = commentRepository.findByPost(post = this).count(),
             duration = TimeAgo.using(createdDate.toEpochMilli())
         )
+    }
+
+    fun copy(voteCount: Int): Post {
+        return Post(postId, postName, url, description, voteCount, user, subreddit, createdDate)
     }
 }
