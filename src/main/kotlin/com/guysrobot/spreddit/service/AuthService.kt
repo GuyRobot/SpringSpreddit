@@ -115,7 +115,7 @@ class AuthService(
         refreshTokenService.validateRefreshToken(refreshTokenRequest.refreshToken)
         val token = jwtProvider.generateTokenWithUsername(refreshTokenRequest.username)
         return AuthenticateResponse(
-            token = token,
+            authenticationToken = token,
             username = refreshTokenRequest.username,
             refreshToken = refreshTokenRequest.refreshToken,
             expireAt = Instant.now().plusMillis(jwtProvider.jwtExpirationMills)
