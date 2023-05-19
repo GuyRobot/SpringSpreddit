@@ -7,9 +7,16 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class SubredditService(private val subredditRepository: SubredditRepository) {
+class SubredditService(
+    private val subredditRepository: SubredditRepository,
+    private val authService: AuthService
+) {
     fun save(subredditDto: SubredditDto): SubredditDto {
-        val subreddit = Subreddit(name = subredditDto.name, description = subredditDto.description)
+        val subreddit = Subreddit(
+            name = subredditDto.name,
+            description = subredditDto.description,
+            user = authService.getCurrentUser()
+        )
         val save = subredditRepository.save(subreddit)
         return subredditDto.copy(id = save.id)
     }
