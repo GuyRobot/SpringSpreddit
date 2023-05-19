@@ -9,11 +9,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -24,6 +24,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
@@ -50,7 +51,7 @@ class SecurityConfig(
     @Throws(Exception::class)
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        http.csrf().disable().cors()
+        return http.csrf().disable().cors()
             .and()
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers("/api/auth/**")
@@ -72,22 +73,14 @@ class SecurityConfig(
                     .permitAll()
                     .anyRequest()
                     .authenticated()
-                    .and()
-                    .sessionManagement()
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                    .and()
-                    .cors(Customizer.withDefaults())
-                    .oauth2ResourceServer()
-                    .jwt()
             }
-            .httpBasic(Customizer.withDefaults())
+            .oauth2ResourceServer { it.jwt() }
+            .sessionManagement { session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .exceptionHandling { exceptions ->
                 exceptions
                     .authenticationEntryPoint(BearerTokenAuthenticationEntryPoint())
                     .accessDeniedHandler(BearerTokenAccessDeniedHandler())
-            }
-
-        return http.build()
+            }.build()
     }
 
     @Bean
