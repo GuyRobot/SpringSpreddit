@@ -5,8 +5,9 @@ import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
 
 @Service
-class MailContentBuilder {
-    private lateinit var templateEngine: TemplateEngine
+class MailContentBuilder(
+    private val templateEngine: TemplateEngine
+) {
 
     fun build(message: String): String {
         val context = Context()

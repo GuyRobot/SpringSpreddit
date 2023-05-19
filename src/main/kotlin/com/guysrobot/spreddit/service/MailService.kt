@@ -15,9 +15,9 @@ class MailService(
 ) {
     @Async
     fun sendMail(notificationEmail: NotificationEmail) {
-        val messagePreparator: MimeMessagePreparator = MimeMessagePreparator { mimeMessage ->
+        val messagePreparator = MimeMessagePreparator { mimeMessage ->
             val messageHelper = MimeMessageHelper(mimeMessage)
-            messageHelper.setFrom("spreddit@email.com")
+            messageHelper.setFrom("bluexker@gmail.com")
             messageHelper.setTo(notificationEmail.recipient)
             messageHelper.setSubject(notificationEmail.subject)
             messageHelper.setText(mailContentBuilder.build(notificationEmail.message))
@@ -27,7 +27,8 @@ class MailService(
             mailSender.send(messagePreparator)
             org.slf4j.LoggerFactory.getLogger(MailService::class.java.name).info("Activation email sent")
         } catch (e: Exception) {
-            throw SpredditException("An error occurred when sending email to ${notificationEmail.recipient}")
+            e.printStackTrace()
+            throw SpredditException("An error occurred when sending email to ${notificationEmail.recipient}: ${e.message}")
         }
     }
 }
