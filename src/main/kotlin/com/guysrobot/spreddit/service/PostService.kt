@@ -26,7 +26,6 @@ class PostService(
             .orElseThrow { SpredditException("Subreddit not found with name ${postRequest.subredditName}") }
         val user = authService.getCurrentUser()
         val post = Post(
-            postId = postRequest.postId,
             postName = postRequest.postName,
             url = postRequest.url,
             description = postRequest.description,
